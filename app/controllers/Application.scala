@@ -1,12 +1,24 @@
 package controllers
 
-import play.api._
-import play.api.mvc._
+import javax.inject.Inject
 
-class Application extends Controller {
+import play.api.mvc._
+import reader.Reader
+
+class Application @Inject()(protected val articlesRepo: models.Articles,
+                            protected val akRepo: models.ArticleKeywords,
+                            protected val crawlSessionsRepo: models.CrawlSessions,
+                            protected val feedsRepo: models.Feeds,
+                            protected val keywordsRepo: models.Keywords) extends Controller {
 
   def index = Action {
-    Ok(views.html.index("Your new application is ready."))
+    Ok(views.html.index())
+  }
+
+  def run = Action {
+    val reader = new Reader(crawlSessionsRepo, feedsRepo, keywordsRepo, akRepo, articlesRepo)
+    reader.crawl()
+    Ok("RUN")
   }
 
 }

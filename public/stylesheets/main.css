@@ -1,0 +1,130 @@
+.top-header {
+    padding: 5px;
+}
+
+.location-header {
+    margin-top: -22px;
+}
+
+.location-header > .location-header-list {
+    border-bottom: 1px solid lightgrey;
+    list-style-type: none;
+    margin-bottom: 4px;
+    text-align: center;
+    padding: 0px;
+    padding-bottom: 3px;
+    margin-top: 0px;
+}
+
+.location-header > .location-header-list > li {
+    border-bottom: 0px;
+    border-top: 1px solid lightgray;
+    display: inline;
+    padding: 5px;
+    font-size: 0.7em;
+    color: lightgrey;
+    border-bottom: 1px solid white;
+}
+
+.location-header > .location-header-list > li:first-child {
+    border-top-left-radius: 3px;
+    border-left: 1px solid lightgrey;
+}
+
+.location-header > .location-header-list > li:last-child {
+    border-top-right-radius: 3px;
+    border-right: 1px solid lightgrey;
+}
+
+.title-header {
+    font-family: 'Poiret One', cursive;
+    text-align: center;
+    font-size: 64px;
+}
+
+.details-header {
+    font-size: 0.9em;
+    text-align: center;
+    color: dimgray;
+}
+
+.categories-header {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-top: 2px black solid;
+    border-bottom: 1px black solid;
+    text-align: center;
+    padding-bottom: 1px;
+}
+
+.categories-header > a {
+    border-bottom: 0px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.borderless {
+    border: 0px;
+}
+
+.btn-xsm {
+    padding: 3px 6px;
+    font-size: 10px;
+    line-height: 1.2;
+    border-radius: 2px;
+}
+
+.footer {
+    margin-top: 20px;
+    border-top: 1px solid lightgray;
+}
+
+.footer > .footer-list {
+    border-bottom: 0px;
+    list-style-type: none;
+    margin-bottom: 4px;
+    text-align: center;
+    padding: 0px;
+    margin-top: 0px;
+}
+
+.footer > .footer-list > li {
+    border-bottom: 0px;
+    display: inline;
+    padding: 5px;
+    font-size: 0.7em;
+    color: lightgrey;
+    border-bottom: 1px solid white;
+}
+
+.footer > .footer-list > li:last-child {
+    border-right: 0px;
+}
+
+/* -moz, -o- prefexies are skipped */
+.content {
+    -webkit-transition: -webkit-transform 1s;
+    -webkit-perspective: 600px;
+}
+
+.content .flip {
+    -webkit-transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    -webkit-transition: all 0.2s ease-in-out;
+}
+
+.content .flip.ng-enter {
+    -webkit-transform: rotateY(-180deg);
+}
+
+.content .flip.ng-enter-active {
+    -webkit-transform: rotateY(0deg);
+}
+
+.content .flip.ng-leave {
+    -webkit-transform: rotateY(0deg);
+}
+
+.content .flip.ng-leave-active {
+    -webkit-transform: rotateY(180deg);
+}

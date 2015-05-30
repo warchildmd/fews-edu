@@ -3,7 +3,18 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
+GET        /                        controllers.Application.index
+GET        /run                     controllers.Application.run
+
+# API Routes
+# Categories Resource Routes
+GET     /api/categories             controllers.Categories.index
+
+# Articles Resource Routes
+GET     /api/articles               controllers.Articles.index
+GET     /api/articles/popular       controllers.Articles.popular
+GET     /api/articles/:id           controllers.Articles.get(id: Int)
+GET     /api/articles/:id/similar   controllers.Articles.similar(id: Int)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET        /assets/*file            controllers.Assets.versioned(path="/public", file: Asset)
