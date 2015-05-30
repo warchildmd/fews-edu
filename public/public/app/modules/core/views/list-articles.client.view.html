@@ -1,0 +1,80 @@
+<section data-ng-controller="ArticlesListController" data-ng-init="find()">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="main-article" data-ng-if="articles.$resolved && articles.results.length">
+                <img class="img img-responsive pull-left" data-ng-src="{{ articles.results[0].image }}"/>
+                <a href="/#!/articles/{{ articles.results[0].id }}" class="main-article-title">
+                    {{ articles.results[0].title }}</a>
+
+                <div class="main-article-content">{{ articles.results[0].content | limitTo: 512 }}</div>
+                <div class="main-article-pubdate">{{ articles.results[0].publicationDate | date:'medium' }}</div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="row">
+                <!--<div class="article-container col-md-4" data-ng-repeat="article in articles.results">
+                    <div class="article-box">
+                        <a class="article-title" href="/#!/articles/{{ article.id }}" data-ng-bind="article.title"></a>
+                        <div data-ng-bind="article.content | limitTo: 256"></div>
+                    </div>
+                    <div class="article-pubdate" data-ng-bind="article.publication_date | date:'medium'"></div>
+                </div>-->
+                <div class="col-md-4">
+                    <div class="article-container" data-ng-repeat="article in articles.results"
+                         data-ng-show="$index % 3 === 0">
+                        <div class="article-box">
+                            <a class="article-title" href="/#!/articles/{{ article.id }}"
+                               data-ng-bind="article.title"></a>
+
+                            <div data-ng-bind="article.content | limitTo: 256"></div>
+                        </div>
+                        <div class="article-pubdate" data-ng-bind="article.publicationDate | date:'medium'"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="article-container" data-ng-repeat="article in articles.results"
+                         data-ng-show="$index % 3 === 1">
+                        <div class="article-box">
+                            <a class="article-title" href="/#!/articles/{{ article.id }}"
+                               data-ng-bind="article.title"></a>
+
+                            <div data-ng-bind="article.content | limitTo: 256"></div>
+                        </div>
+                        <div class="article-pubdate" data-ng-bind="article.publicationDate | date:'medium'"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="article-container" data-ng-repeat="article in articles.results"
+                         data-ng-show="$index % 3 === 2">
+                        <div class="article-box">
+                            <a class="article-title" href="/#!/articles/{{ article.id }}"
+                               data-ng-bind="article.title"></a>
+
+                            <div data-ng-bind="article.content | limitTo: 256"></div>
+                        </div>
+                        <div class="article-pubdate" data-ng-bind="article.publicationDate | date:'medium'"></div>
+                    </div>
+                </div>
+            </div>
+            <a data-ng-if="articles.results.length"
+               data-ng-click="loadMore()"
+               class="btn btn-primary col-md-12">Load more...</a>
+        </div>
+        <div class="col-md-3">
+            <h2>Trending news</h2>
+            <ul class="trending-list">
+                <li data-ng-repeat="article in popular_articles.results | orderBy:'value':true">
+                    <b>{{ article.value * 10 | number : 2 }}</b>
+                    <a href="/#!/articles/{{ article.id }}">
+                        {{ article.title }}
+                    </a>
+                </li>
+            </ul>
+            <div data-ng-if="!popular_articles.results.length">
+                Loading...
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-warning text-center" data-ng-if="articles.$resolved && !articles.results.length">
+        No articles yet?
+    </div>
+</section>

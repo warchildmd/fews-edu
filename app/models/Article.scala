@@ -1,0 +1,127 @@
+package models
+
+import org.joda.time.DateTime
+import tables.Tables
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+
+import javax.inject.Inject
+import play.api.db.slick.DatabaseConfigProvider
+import play.api.db.slick.HasDatabaseConfigProvider
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import slick.driver.JdbcProfile
+
+import com.github.tototoshi.slick.MySQLJodaSupport._
+
+case class Article(id: Option[Int] = None,
+                   title: String,
+                   description: Option[String],
+                   content: String,
+                   link: String,
+                   image: Option[String],
+                   publicationDate: DateTime,
+                   feedId: Int,
+                   hash: String,
+                   crawlSessionId: Int,
+                   createdAt: DateTime)
+
+class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider) extends Tables with HasDatabaseConfigProvider[JdbcProfile] {
+
+  import driver.api._
+
+  val articles = TableQuery[ArticlesTable]
+
+  def insert(article: Article): Future[Int] = db.run((articles returning articles.map(_.id)) += article)
+
+  def update(id: Int, article: Article): Future[Unit] = {
+    val articleToUpdate: Article = article.copy(Some(id))
+    db.run(articles.filter(_.id === id).update(articleToUpdate)).map(_ => ())
+  }
+
+  def delete(id: Int): Future[Unit] =
+    db.run(articles.filter(_.id === id).delete).map(_ => ())
+
+  def all(): Future[Seq[Article]] = db.run(articles.result)
+
+  def count(): Future[Int] = db.run(articles.length.result)
+
+  def findById(id: Int): Future[Option[Article]] =
+    db.run(articles.filter(_.id === id).result.headOption)
+
+  def list(page: Int = 0, pageSize: Int = 20, orderBy: Int = 1): Page[Article] = {
+
+    val offset = pageSize * page
+    val totalRows = Await.result(count(), Duration.Inf)
+
+    val result = db.run(articles.sortBy(_.publicationDate.desc).drop(offset).take(pageSize).result)
+    val list = Await.result(result, Duration.Inf)
+
+    Page(list, page, offset, totalRows)
+  }
+
+  def popular(): Page[Article] = {
+    val articleKeywords = TableQuery[ArticleKeywordsTable]
+    val articleKeywordsQuery =
+      (
+        for {
+          (article, articleKeyword) <- articles join articleKeywords on (_.id === _.articleId)
+          if article.publicationDate >= new DateTime().minusDays(3)
+        } yield (articleKeyword.keywordId, articleKeyword.value)
+        ).groupBy(_._1)
+    val articleKeywordsQueryValues = articleKeywordsQuery.map { case (keywordId, line) =>
+      (keywordId, line.map(_._2).sum)
+    }
+    val globalQuery =
+      (
+        for {
+          (articleKeyword, kValue) <- articleKeywords join articleKeywordsQueryValues on (_.keywordId === _._1)
+        } yield (articleKeyword.articleId, kValue._2)
+        ).groupBy(_._1)
+    val globalQuerySum = globalQuery.map { case (articleId, line) =>
+      (articleId, line.map(_._2).sum)
+    }
+    val sorted = globalQuerySum.sortBy(_._2.desc).take(20)
+    val sortedArticles = for {
+      (sv, article) <- sorted join articles on (_._1 === _.id)
+    } yield article
+
+    Page(Await.result(db.run(sortedArticles.result), Duration.Inf), 0, 0, 0)
+  }
+
+  def similar(articleId: Option[Int]): Page[Article] = {
+    val articleKeywords = TableQuery[ArticleKeywordsTable]
+    val keywordIds = articleKeywords.filter(_.articleId === articleId).map(_.keywordId)
+
+    val values = (
+      for {
+        (articleKeyword, article) <- articleKeywords join articles on (_.articleId === _.id)
+        if articleKeyword.keywordId in keywordIds
+        if article.publicationDate >= new DateTime().minusDays(3)
+      } yield (article.id, articleKeyword.value)).groupBy(_._1)
+
+    val globalQuerySum = values.map { case (articleId, line) =>
+      (articleId, line.map(_._2).sum)
+    }
+
+    val sorted = globalQuerySum.sortBy(_._2.desc).take(5)
+
+    val sortedArticles = for {
+      (sv, article) <- sorted join articles on (_._1 === _.id)
+    } yield article
+
+    Page(Await.result(db.run(sortedArticles.result), Duration.Inf), 0, 0, 0)
+  }
+
+  def getPopularityIndex(articleId: Option[Int]): Double = {
+    val articleKeywords = TableQuery[ArticleKeywordsTable]
+    val keywordIds = articleKeywords.filter(_.articleId === articleId).map(_.keywordId)
+    val values =
+      for {
+        (articleKeyword, article) <- articleKeywords join articles on (_.articleId === _.id)
+        if articleKeyword.keywordId in keywordIds
+        if article.publicationDate >= new DateTime().minusDays(3)
+      } yield articleKeyword.value
+    Await.result(db.run(values.sum.result), Duration.Inf).getOrElse(0)
+  }
+}

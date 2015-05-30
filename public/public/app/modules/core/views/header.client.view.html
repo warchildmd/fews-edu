@@ -1,0 +1,46 @@
+<div class="container" ng-controller="HeaderController" data-ng-init="initHeader()">
+    <div class="top-header">
+        <button class="btn btn-sm btn-default"><i class="fa fa-search"></i> SEARCH</button>
+
+        <div class="btn-group pull-right">
+            <button class="btn btn-sm btn-primary">LOG IN</button>
+            <button class="btn btn-sm btn-default"><i class="fa fa-cog"></i></button>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="location-header">
+        <ul class="location-header-list">
+            <li>
+                International
+            </li>
+            <li>
+                US
+            </li>
+            <li>
+                Romania
+            </li>
+            <li>
+                Russia
+            </li>
+        </ul>
+    </div>
+    <div class="title-header">
+        <a href="/" style="text-decoration : none ; color : black">the fews</a>
+    </div>
+    <div class="details-header">
+        {{ today | date: 'fullDate' }} | World | Work in progress
+    </div>
+    <div class="categories-header">
+        <a class="btn btn-xsm btn-default borderless"
+           data-ng-repeat="category in categories.results"
+           data-ng-bind="category.name"
+           data-ng-href="/#!/category/{{ category.id }}"></a>
+        <!--<a class="btn btn-xsm btn-default borderless" href="#">General</a>
+        <a class="btn btn-xsm btn-default borderless" href="#">Economy</a>
+        <a class="btn btn-xsm btn-default borderless" href="#">Politics</a>
+        <a class="btn btn-xsm btn-default borderless" href="#">Tech</a>
+        <a class="btn btn-xsm btn-default borderless" href="#">Sports</a>
+        <a class="btn btn-xsm btn-default borderless" href="#">Science</a>
+        <a class="btn btn-xsm btn-default borderless" href="#">Other</a>-->
+    </div>
+</div>
