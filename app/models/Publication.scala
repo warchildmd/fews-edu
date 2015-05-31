@@ -39,15 +39,4 @@ class Publications @Inject()(protected val dbConfigProvider: DatabaseConfigProvi
   def findById(id: Int): Future[Option[Publication]] =
     db.run(publications.filter(_.id === id).result.headOption)
 
-  def list(page: Int = 0, pageSize: Int = 10, orderBy: Int = 1): Page[Publication] = {
-
-    val offset = pageSize * page
-    val totalRows = Await.result(count(), Duration.Inf)
-
-    val result = db.run(publications.drop(offset).take(pageSize).result)
-    val list = Await.result(result, Duration.Inf)
-
-    Page(list, page, offset, totalRows)
-  }
-
 }

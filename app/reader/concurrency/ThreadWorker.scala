@@ -61,7 +61,7 @@ class ThreadWorker @Inject()(val articlesRepo: models.Articles,
             // println("Article exists!")
           }
           case e: com.mysql.jdbc.MysqlDataTruncation => {
-            println("Data too long")
+            // println("Data too long")
           }
         }
       })

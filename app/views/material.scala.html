@@ -1,0 +1,83 @@
+@()<!DOCTYPE html>
+<html lang="en" >
+    <head>
+        <title>Angular Material - Starter App</title>
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+        <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic'>
+        <link rel="stylesheet" href="@routes.Assets.versioned("vendor/angular-material/angular-material.css")"/>
+        <link rel="stylesheet" href="@routes.Assets.versioned("ngapp/assets/app.css")"/>
+    </head>
+
+    <body ng-app="fews" layout="row">
+
+        <md-sidenav class="site-sidenav md-sidenav-left md-whiteframe-z2"
+        md-component-id="left"
+        md-is-locked-open="$mdMedia('gt-sm')">
+
+            <md-toolbar class="md-whiteframe-z1">
+                <h1>Users</h1>
+            </md-toolbar>
+
+        </md-sidenav>
+
+
+        <div flex layout="column" tabIndex="-1" role="main" class="md-whiteframe-z2">
+
+            <md-toolbar layout="row" class="md-whiteframe-z1">
+                <md-button class="menu" hide-gt-sm aria-label="Show User List">
+                    <md-icon md-svg-icon="menu" ></md-icon>
+                </md-button>
+                <md-autocomplete
+                    ng-disabled="ctrl.isDisabled"
+                    md-no-cache="ctrl.noCache"
+                    md-selected-item="ctrl.selectedItem"
+                    md-search-text-change="ctrl.searchTextChange(ctrl.searchText)"
+                    md-search-text="ctrl.searchText"
+                    md-selected-item-change="ctrl.selectedItemChange(item)"
+                    md-items="item in ctrl.querySearch(ctrl.searchText)"
+                    md-item-text="item.display"
+                    md-min-length="0"
+                    placeholder="What is your favorite US state?">
+                    <md-item-template>
+                        <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{{item.display}}</span>
+                    </md-item-template>
+                    <md-not-found>
+                        No matches found for "{{ctrl.searchText}}".
+                    </md-not-found>
+                </md-autocomplete>
+                <h1>Angular Material - Starter App</h1>
+            </md-toolbar>
+
+            <md-content flex id="content">
+                <h2>John</h2>
+                <p>Doe</p>
+
+                <md-button class="contact" md-no-ink aria-label="Contact User">
+                    <md-tooltip>Contact ME</md-tooltip>
+                    <md-icon md-svg-icon="share"></md-icon>
+                </md-button>
+            </md-content>
+
+        </div>
+
+        <script src="@routes.Assets.versioned("vendor/angular/angular.js")"></script>
+        <script src="@routes.Assets.versioned("vendor/angular-animate/angular-animate.js")"></script>
+        <script src="@routes.Assets.versioned("vendor/angular-aria/angular-aria.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.versioned("vendor/angular-material/angular-material.js")"></script>
+
+        <script src="@routes.Assets.versioned("vendor/angular-mocks/angular-mocks.js")"></script>
+        <script src="@routes.Assets.versioned("vendor/angular-resource/angular-resource.min.js")"></script>
+        <script src="@routes.Assets.versioned("vendor/angular-ui-router/release/angular-ui-router.min.js")"></script>
+        <script src="@routes.Assets.versioned("vendor/angular-ui-utils/ui-utils.min.js")"></script>
+        <script src="@routes.Assets.versioned("vendor/angular-cookies/angular-cookies.min.js")"></script>
+
+
+        <script src="@routes.Assets.versioned("ngapp/app.module.js")"></script>
+
+    </body>
+</html>

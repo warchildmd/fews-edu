@@ -2,6 +2,7 @@ package models
 
 import javax.inject.Inject
 
+import helpers.Page
 import play.api.db.slick.{HasDatabaseConfigProvider, DatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import tables.Tables
@@ -26,12 +27,12 @@ class Categories @Inject()(protected val dbConfigProvider: DatabaseConfigProvide
   def list(page: Int = 0, pageSize: Int = 10, orderBy: Int = 1): Page[Category] = {
 
     val offset = pageSize * page
-    val totalRows = Await.result(count(), Duration.Inf)
+    val total = Await.result(count(), Duration.Inf)
 
     val result = db.run(categories.drop(offset).take(pageSize).result)
     val list = Await.result(result, Duration.Inf)
 
-    Page(list, page, offset, totalRows)
+    Page(list, page, offset, offset + list.length, total)
   }
 
 }

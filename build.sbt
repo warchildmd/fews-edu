@@ -7,7 +7,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
-  jdbc,
+  // jdbc,
   cache,
   ws,
   specs2 % Test,
@@ -15,8 +15,10 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.35",
   "com.typesafe.play" %% "play-slick" % "1.0.0",
   "com.typesafe.slick" %% "slick" % "3.0.0",
+  "com.typesafe.play" %% "play-slick-evolutions" % "1.0.0",
   "org.joda" % "joda-convert" % "1.7",
-  "com.github.tototoshi" %% "slick-joda-mapper" % "2.0.0"
+  "com.github.tototoshi" %% "slick-joda-mapper" % "2.0.0",
+  "org.mindrot" % "jbcrypt" % "0.3m"
 )
 
 libraryDependencies += "de.l3s.boilerpipe" % "boilerpipe" % "1.1.0"

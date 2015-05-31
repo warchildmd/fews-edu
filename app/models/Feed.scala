@@ -36,15 +36,4 @@ class Feeds @Inject()(protected val dbConfigProvider: DatabaseConfigProvider) ex
 
   def all(): Future[Seq[Feed]] = db.run(feeds.result)
 
-  def list(page: Int = 0, pageSize: Int = 10, orderBy: Int = 1): Page[Feed] = {
-
-    val offset = pageSize * page
-    val totalRows = Await.result(count(), Duration.Inf)
-
-    val result = db.run(feeds.drop(offset).take(pageSize).result)
-    val list = Await.result(result, Duration.Inf)
-
-    Page(list, page, offset, totalRows)
-  }
-
 }

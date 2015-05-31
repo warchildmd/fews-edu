@@ -27,6 +27,7 @@ angular.module('core').controller('ArticlesViewController', ['$scope', '$sce', '
                 }
                 $scope.article.content = $sce.trustAsHtml($scope.article.content);
             });
+            $scope.similarArticles = Articles.similar({articleId: $stateParams.articleId});
 		};
 	}
 ]);

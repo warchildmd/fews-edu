@@ -19,6 +19,19 @@
             <b>Popularity index: </b> {{ article.value * 10 | number : 2 }}
             <br />
             <a href="{{ article.link }}">Source</a>
+
+            <h3>Similar news</h3>
+            <ul class="trending-list">
+                <li data-ng-repeat="article in similarArticles.data | orderBy:'value':true">
+                    <b>{{ article.value * 10 | number : 2 }}</b>
+                    <a href="/#!/articles/{{ article.id }}">
+                        {{ article.title }}
+                    </a>
+                </li>
+            </ul>
+            <div data-ng-if="!similarArticles.$resolved">
+                Loading...
+            </div>
         </div>
     </div>
 </section>

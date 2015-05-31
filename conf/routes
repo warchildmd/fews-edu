@@ -3,18 +3,23 @@
 # ~~~~
 
 # Home page
-GET        /                        controllers.Application.index
-GET        /run                     controllers.Application.run
+GET         /                                controllers.Application.index
+GET         /run                             controllers.Application.run
+POST        /api/auth/signin                 controllers.Auth.login
+POST        /api/auth/signout                controllers.Auth.logout
+POST        /api/auth/signup                 controllers.Auth.register
 
 # API Routes
 # Categories Resource Routes
-GET     /api/categories             controllers.Categories.index
+GET         /api/categories                  controllers.Categories.index
 
 # Articles Resource Routes
-GET     /api/articles               controllers.Articles.index
-GET     /api/articles/popular       controllers.Articles.popular
-GET     /api/articles/:id           controllers.Articles.get(id: Int)
-GET     /api/articles/:id/similar   controllers.Articles.similar(id: Int)
+GET         /api/articles                    controllers.Articles.index
+GET         /api/articles/popular            controllers.Articles.popular
+GET         /api/articles/recommended        controllers.Articles.recommended
+GET         /api/articles/:id                controllers.Articles.get(id: Int)
+GET         /api/articles/:id/similar        controllers.Articles.similar(id: Int)
+
 
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file            controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                    controllers.Assets.versioned(path="/public", file: Asset)

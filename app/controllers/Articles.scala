@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
+import helpers.Page
 import models._
 
 import play.api.mvc._
@@ -17,7 +18,8 @@ import scala.concurrent.duration.Duration
 
 class Articles @Inject()(protected val articlesRepo: models.Articles,
                          protected val akRepo: models.ArticleKeywords,
-                         protected val keywordsRepo: models.Keywords) extends Controller {
+                         protected val keywordsRepo: models.Keywords,
+                         protected val auth: helpers.Auth) extends Controller {
 
   implicit val articleFormat = Json.format[models.Article]
   implicit val articleKeywordFormat = Json.format[models.ArticleKeyword]
@@ -25,11 +27,12 @@ class Articles @Inject()(protected val articlesRepo: models.Articles,
 
   implicit def pageFormat[A : Format]: Format[Page[A]] =
   (
-    (__ \ "results").format[Seq[A]] ~
-    (__ \ "page").format[Int] ~
-    (__ \ "offset").format[Long] ~
-    (__ \ "total").format[Long]
-  )(models.Page.apply, unlift(models.Page.unapply))
+    (__ \ "data").format[Seq[A]] ~
+    (__ \ "current_page").format[Int] ~
+    (__ \ "from").format[Int] ~
+    (__ \ "to").format[Int] ~
+    (__ \ "total").format[Int]
+  )(Page.apply, unlift(helpers.Page.unapply))
 
   def get(id: Int) = Action { implicit s =>
     val article = articlesRepo.findById(id)
@@ -41,6 +44,12 @@ class Articles @Inject()(protected val articlesRepo: models.Articles,
     val jsonArticle = toJson(Await.result(article, Duration.Inf)).as[JsObject] +
       ("value" -> toJson(articlesRepo.getPopularityIndex(Some(id)))) +
       ("keywords" -> toJson(jsonKeywords))
+
+    val user = auth.getUser(s.headers.get("Auth-Token").getOrElse(""))
+    if (user.nonEmpty) {
+      articlesRepo.adjust(user.get.id, Some(id))
+    }
+
     Ok(toJson(jsonArticle))
   }
 
@@ -50,24 +59,48 @@ class Articles @Inject()(protected val articlesRepo: models.Articles,
 
   def popular = Action { implicit s =>
     val articles = articlesRepo.popular()
-    val jsonArticles = articles.results.map((article: Article) => {
+    val jsonArticles = articles.data.map((article: Article) => {
       toJson(article).as[JsObject] + ("value" -> toJson(articlesRepo.getPopularityIndex(article.id)))
     })
     val jsonResponse = Json.obj(
-      "results" -> jsonArticles
+      "data" -> jsonArticles
     )
     Ok(toJson(jsonResponse))
   }
 
   def similar(id: Int) = Action { implicit s =>
-    val articles = articlesRepo.similar(Some(id))
-    val jsonArticles = articles.results.map((article: Article) => {
+    val articles = articlesRepo.betaSimilar(Some(id))
+    val jsonArticles = articles.data.map((article: Article) => {
       toJson(article).as[JsObject] + ("value" -> toJson(articlesRepo.getPopularityIndex(article.id)))
     })
     val jsonResponse = Json.obj(
-      "results" -> jsonArticles
+      "data" -> jsonArticles
     )
     Ok(toJson(jsonResponse))
+  }
+
+  def recommended() = Action { implicit s =>
+    val user = auth.getUser(s.headers.get("Auth-Token").getOrElse(""))
+    if (user.isEmpty) {
+      val articles = articlesRepo.popular()
+      val jsonArticles = articles.data.map((article: Article) => {
+        toJson(article).as[JsObject] + ("value" -> toJson(articlesRepo.getPopularityIndex(article.id)))
+      })
+      val jsonResponse = Json.obj(
+        "data" -> jsonArticles
+      )
+      Ok(toJson(jsonResponse))
+    } else {
+      val articles = articlesRepo.recommend(user.get.id)
+      val jsonArticles = articles.data.map((article: Article) => {
+        toJson(article).as[JsObject] + ("value" -> toJson(articlesRepo.getPopularityIndex(article.id))) +
+          ("distance" -> toJson(articlesRepo.getScore(user.get.id, article.id)))
+      })
+      val jsonResponse = Json.obj(
+        "data" -> jsonArticles
+      )
+      Ok(toJson(jsonResponse))
+    }
   }
 
 }

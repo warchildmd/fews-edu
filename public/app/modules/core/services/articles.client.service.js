@@ -13,6 +13,11 @@ angular.module('core').factory('Articles', ['$resource',
                 method: 'GET',
                 isArray: false,
                 url: '/api/articles/popular/'
+            },
+            similar: {
+                method: 'GET',
+                isArray: false,
+                url: '/api/articles/:articleId/similar/'
             }
 		});
 	}
