@@ -41,17 +41,6 @@ class ArticleKeywords @Inject()(protected val dbConfigProvider: DatabaseConfigPr
   def findById(id: Int): Future[Option[ArticleKeyword]] =
     db.run(articleKeywords.filter(_.id === id).result.headOption)
 
-  def list(page: Int = 0, pageSize: Int = 20, orderBy: Int = 1): Page[ArticleKeyword] = {
-
-    val offset = pageSize * page
-    val totalRows = Await.result(count(), Duration.Inf)
-
-    val result = db.run(articleKeywords.drop(offset).take(pageSize).result)
-    val list = Await.result(result, Duration.Inf)
-
-    Page(list, page, offset, totalRows)
-  }
-
   def byArticle(id: Option[Int]): Future[Seq[ArticleKeyword]] =
     db.run(articleKeywords.filter(_.articleId === id).result)
 

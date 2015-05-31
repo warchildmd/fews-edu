@@ -1,5 +1,6 @@
 package models
 
+import helpers.Page
 import org.joda.time.DateTime
 import tables.Tables
 
@@ -52,12 +53,12 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   def list(page: Int = 0, pageSize: Int = 20, orderBy: Int = 1): Page[Article] = {
 
     val offset = pageSize * page
-    val totalRows = Await.result(count(), Duration.Inf)
+    val total = Await.result(count(), Duration.Inf)
 
     val result = db.run(articles.sortBy(_.publicationDate.desc).drop(offset).take(pageSize).result)
     val list = Await.result(result, Duration.Inf)
 
-    Page(list, page, offset, totalRows)
+    Page(list, page, offset, offset + list.length, total)
   }
 
   def popular(): Page[Article] = {
@@ -86,7 +87,9 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
       (sv, article) <- sorted join articles on (_._1 === _.id)
     } yield article
 
-    Page(Await.result(db.run(sortedArticles.result), Duration.Inf), 0, 0, 0)
+    val list = Await.result(db.run(sortedArticles.result), Duration.Inf)
+
+    Page(list, 1, 0, list.length, list.length)
   }
 
   def similar(articleId: Option[Int]): Page[Article] = {
@@ -110,7 +113,132 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
       (sv, article) <- sorted join articles on (_._1 === _.id)
     } yield article
 
-    Page(Await.result(db.run(sortedArticles.result), Duration.Inf), 0, 0, 0)
+    val list = Await.result(db.run(sortedArticles.result), Duration.Inf)
+
+    Page(list, 1, 0, list.length, list.length)
+  }
+
+  def betaSimilar(articleId: Option[Int]): Page[Article] = {
+    val articleKeywords = TableQuery[ArticleKeywordsTable]
+    val dbAbs = SimpleFunction.unary[Double, Double]("abs")
+    val threeDaysAgo = new DateTime().minusDays(3)
+
+    val myKeywords = articleKeywords.filter(_.articleId === articleId)
+
+    val freshArticles = articles.filter(_.publicationDate >= threeDaysAgo)
+
+    val inJoin = for {
+      article <- freshArticles
+      keyword <- myKeywords
+    } yield (article.id, keyword.keywordId)
+
+    val emptyAK = new ArticleKeyword(None, 0, 0, 0)
+
+    val valuesJoin = for {
+      (ij, ak) <- inJoin joinLeft articleKeywords on ((ij, ak) => {
+        ij._1 === ak.articleId && ij._2 === ak.keywordId
+      })
+    } yield (ij._1, ij._2, ak.map(_.value))
+
+    val normalize = (
+      for {
+        (values, keywords) <- valuesJoin join myKeywords on (_._2 === _.keywordId)
+      } yield (values._1, dbAbs(values._3.getOrElse(0.0) - keywords.value))).groupBy(_._1)
+
+    val globalQuerySum = normalize.map { case (articleId, line) =>
+      (articleId, line.map(_._2).sum)
+    }
+
+    val sorted = globalQuerySum.sortBy(_._2.asc).take(5)
+
+    val sortedArticles = for {
+      (sv, article) <- sorted join articles on (_._1 === _.id)
+    } yield article
+
+    val list = Await.result(db.run(sortedArticles.result), Duration.Inf)
+
+    Page(list, 1, 0, list.length, list.length)
+  }
+
+  def adjust(userId: Option[Int], articleId: Option[Int]) {
+    val akQuery = TableQuery[ArticleKeywordsTable]
+    val ukQuery = TableQuery[UserKeywordsTable]
+    val alpha = 0.05
+
+    val akList = Await.result(db.run(akQuery.filter(_.articleId === articleId).result), Duration.Inf)
+
+    akList.foreach { ak =>
+      val uk = Await.result(db.run(ukQuery.filter(_.userId === userId).filter(_.keywordId === ak.keywordId).result.headOption),
+        Duration.Inf)
+      if (uk.isEmpty) {
+        val newValue = 0.5 + alpha * (ak.value - 0.5)
+        val newUK = new UserKeyword(None, userId.get, ak.keywordId, newValue)
+        db.run(ukQuery += newUK)
+      } else {
+        val newValue = uk.get.value + alpha * (ak.value - uk.get.value)
+        val newUK = new UserKeyword(uk.get.id, userId.get, ak.keywordId, newValue)
+        db.run(ukQuery.filter(_.id === uk.get.id).update(newUK)).map(_ => ())
+      }
+    }
+  }
+
+  def getScore(userId: Option[Int], articleId: Option[Int]): Double = {
+    val akQuery = TableQuery[ArticleKeywordsTable]
+    val ukQuery = TableQuery[UserKeywordsTable]
+
+    val akList = Await.result(db.run(akQuery.filter(_.articleId === articleId).result), Duration.Inf)
+    var distance: Double = 0
+    akList.foreach { ak =>
+      val uk = Await.result(db.run(ukQuery.filter(_.userId === userId).filter(_.keywordId === ak.keywordId).result.headOption),
+        Duration.Inf)
+      if (uk.isEmpty) {
+        distance += math.abs(0.5 - ak.value)
+      } else {
+        distance += math.abs(uk.get.value - ak.value)
+      }
+    }
+    10.0 - distance
+  }
+
+  def recommend(userId: Option[Int]): Page[Article] = {
+    val articleKeywords = TableQuery[ArticleKeywordsTable]
+    val userKeywords = TableQuery[UserKeywordsTable]
+    val dbAbs = SimpleFunction.unary[Double, Double]("abs")
+    val oneDayAgo = new DateTime().minusDays(1)
+
+    val myKeywords = userKeywords.filter(_.userId === userId).sortBy(_.value.desc).take(100)
+
+    val freshArticles = articles.filter(_.publicationDate >= oneDayAgo)
+
+    val inJoin = for {
+      article <- freshArticles
+      keyword <- myKeywords
+    } yield (article.id, keyword.keywordId)
+
+    val valuesJoin = for {
+      (ij, ak) <- inJoin joinLeft articleKeywords on ((ij, ak) => {
+        ij._1 === ak.articleId && ij._2 === ak.keywordId
+      })
+    } yield (ij._1, ij._2, ak.map(_.value))
+
+    val normalize = (
+      for {
+        (values, keywords) <- valuesJoin join myKeywords on (_._2 === _.keywordId)
+      } yield (values._1, dbAbs(values._3.getOrElse(0.5) - keywords.value))).groupBy(_._1)
+
+    val globalQuerySum = normalize.map { case (articleId, line) =>
+      (articleId, line.map(_._2).sum)
+    }
+
+    val sorted = globalQuerySum.sortBy(_._2.asc).take(50)
+
+    val sortedArticles = for {
+      (sv, article) <- sorted join articles on (_._1 === _.id)
+    } yield article
+
+    val list = Await.result(db.run(sortedArticles.result), Duration.Inf)
+
+    Page(list, 1, 0, list.length, list.length)
   }
 
   def getPopularityIndex(articleId: Option[Int]): Double = {

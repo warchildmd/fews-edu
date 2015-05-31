@@ -38,15 +38,4 @@ class Languages @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
   def findByContent(content: String): Future[Option[Language]] =
     db.run(languages.filter(_.content === content).result.headOption)
 
-  def list(page: Int = 0, pageSize: Int = 10, orderBy: Int = 1): Page[Language] = {
-
-    val offset = pageSize * page
-    val totalRows = Await.result(count(), Duration.Inf)
-
-    val result = db.run(languages.drop(offset).take(pageSize).result)
-    val list = Await.result(result, Duration.Inf)
-
-    Page(list, page, offset, totalRows)
-  }
-
 }

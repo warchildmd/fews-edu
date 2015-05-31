@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
+import helpers.Page
 import models._
 
 import play.api.mvc._
@@ -17,11 +18,12 @@ class Categories @Inject()(val categoriesRepo: models.Categories) extends Contro
 
   implicit def pageFormat[A : Format]: Format[Page[A]] =
   (
-    (__ \ "results").format[Seq[A]] ~
-    (__ \ "page").format[Int] ~
-    (__ \ "offset").format[Long] ~
-    (__ \ "total").format[Long]
-  )(models.Page.apply, unlift(models.Page.unapply))
+    (__ \ "data").format[Seq[A]] ~
+    (__ \ "current_page").format[Int] ~
+    (__ \ "from").format[Int] ~
+    (__ \ "to").format[Int] ~
+    (__ \ "total").format[Int]
+  )(Page.apply, unlift(helpers.Page.unapply))
 
   def index() = Action { implicit s =>
     Ok(toJson(categoriesRepo.list()))

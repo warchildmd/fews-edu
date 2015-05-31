@@ -40,17 +40,6 @@ class Keywords @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   def findById(id: Int): Future[Option[Keyword]] =
     db.run(keywords.filter(_.id === id).result.headOption)
 
-  def list(page: Int = 0, pageSize: Int = 20, orderBy: Int = 1): Page[Keyword] = {
-
-    val offset = pageSize * page
-    val totalRows = Await.result(count(), Duration.Inf)
-
-    val result = db.run(keywords.drop(offset).take(pageSize).result)
-    val list = Await.result(result, Duration.Inf)
-
-    Page(list, page, offset, totalRows)
-  }
-
   def findByContent(content: String): Future[Option[Keyword]] =
     db.run(keywords.filter(_.content === content).result.headOption)
 

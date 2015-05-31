@@ -21,7 +21,7 @@ angular.module('core').controller('ArticlesListController', ['$scope',
                 page: $scope.page
             }).$promise;
             promise.then(function (data) {
-                $scope.articles.results = $scope.articles.results.concat(data.results);
+                $scope.articles.data = $scope.articles.data.concat(data.data);
                 console.log($scope.articles);
             });
         }

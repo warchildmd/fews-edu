@@ -1,51 +1,54 @@
 <section class="row" data-ng-controller="AuthenticationController">
-    <form data-ng-submit="signin()" class="form-signin">
-        <h2 class="form-signin-heading">autentificare</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <form data-ng-submit="signin()" class="form-signin">
+                <h2 class="form-signin-heading">authentication</h2>
 
-        <div class="login-wrap">
-            <div class="user-login-info">
-                <input type="text" class="form-control" placeholder="Email" autofocus=""
-                       id="email" name="email"
-                       data-ng-model="credentials.email">
-                <input type="password" class="form-control" placeholder="Parola"
-                       id="password" name="password"
-                       data-ng-model="credentials.password">
-            </div>
-            <div data-ng-show="error" class="text-center text-danger">
-                <strong data-ng-bind="error"></strong>
-            </div>
-            <label class="checkbox">
-                <input type="checkbox" value="remember-me"> Tine-ma minte
-                <span class="pull-right">
-                    <a data-toggle="modal" href="#myModal"> Ai uitat parola?</a>
-                </span>
-            </label>
-            <button class="btn btn-lg btn-login btn-block" type="submit">Autentificare</button>
-        </div>
-
-        <!-- Modal -->
-        <div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="myModal"
-             class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                        <h4 class="modal-title">Forgot Password ?</h4>
+                <div class="login-wrap">
+                    <div class="user-login-info">
+                        <div class="form-group">
+                        <input type="text" class="form-control" placeholder="username" autofocus=""
+                               id="email" name="email"
+                               data-ng-model="credentials.username">
+                            </div>
+                        <div class="form-group">
+                        <input type="password" class="form-control" placeholder="password"
+                               id="password" name="password"
+                               data-ng-model="credentials.password">
+                            </div>
                     </div>
-                    <div class="modal-body">
-                        <p>Trebuie sa introduci adresa de email.</p>
-                        <input type="text" name="email" placeholder="Email" autocomplete="off"
-                               class="form-control placeholder-no-fix">
-
+                    <div data-ng-show="error" class="text-center text-danger">
+                        <strong data-ng-bind="error"></strong>
                     </div>
-                    <div class="modal-footer">
-                        <button data-dismiss="modal" class="btn btn-default" type="button">Anulare</button>
-                        <button class="btn btn-success" type="button">Trimite</button>
-                    </div>
+                    <button class="btn btn-lg btn-login btn-block" type="submit">sign in</button>
                 </div>
-            </div>
+            </form>
         </div>
-        <!-- modal -->
+        <div class="col-md-6">
+            <form data-ng-submit="signup()" class="form-signup">
+                <h2 class="form-signin-heading">registration</h2>
 
-    </form>
+                <div class="login-wrap">
+                    <div class="user-signup-info">
+                        <div class="form-group">
+                        <input type="text" class="form-control" placeholder="username" autofocus="" name="email"
+                               data-ng-model="credentials.username">
+                            </div>
+                        <div class="form-group">
+                        <input type="password" class="form-control" placeholder="password" name="password"
+                               data-ng-model="credentials.password">
+                            </div>
+                        <div class="form-group">
+                        <input type="password" class="form-control" placeholder="confirm password" name="password"
+                               data-ng-model="credentials.password_confirmation">
+                            </div>
+                    </div>
+                    <div data-ng-show="error" class="text-center text-danger">
+                        <strong data-ng-bind="error"></strong>
+                    </div>
+                    <button class="btn btn-lg btn-login btn-block" type="submit">sign up</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </section>

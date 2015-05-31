@@ -4,6 +4,9 @@ angular.module('core').controller('HeaderController', ['$scope', '$sce', '$state
 
         $scope.today = new Date();
 
+		$scope.user = $scope.authentication.user;
+		$scope.authenticated = (Authentication.user) ? true : false;
+
 		$scope.initHeader = function() {
 			$scope.categories = Categories.get();
 		};

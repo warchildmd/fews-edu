@@ -123,4 +123,41 @@ trait Tables { self: HasDatabaseConfigProvider[JdbcProfile] =>
     def * = (id.?, name, description, link, categoryId, createdAt) <> (Publication.tupled, Publication.unapply)
   }
 
+  class UsersTable(tag: Tag) extends Table[User](tag, "core_user") {
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def username = column[String]("username", O.SqlType("VARCHAR(64)"))
+    def password = column[String]("password", O.SqlType("VARCHAR(128)"))
+    def status = column[String]("status", O.SqlType("VARCHAR(32)"))
+    def createdAt = column[DateTime]("created_at")
+
+    def * = (id.?, username, password, status, createdAt) <> (User.tupled, User.unapply)
+  }
+
+  class TokensTable(tag: Tag) extends Table[Token](tag, "core_session") {
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def token = column[String]("token", O.SqlType("VARCHAR(64)"))
+    def userId = column[Int]("user_id")
+    def createdAt = column[DateTime]("created_at")
+
+    def user = foreignKey("token_user_fk", userId, TableQuery[UsersTable])(_.id,
+      onDelete=ForeignKeyAction.Cascade)
+
+    def * = (id.?, token, userId, createdAt) <> (Token.tupled, Token.unapply)
+  }
+
+  class UserKeywordsTable(tag: Tag) extends Table[UserKeyword](tag, "core_user_keyword") {
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def userId = column[Int]("user_id")
+    def keywordId = column[Int]("keyword_id")
+    def value = column[Double]("value", O.Default[Double](0.5))
+
+    def user = foreignKey("uk_user_fk", userId, TableQuery[UsersTable])(_.id,
+      onDelete=ForeignKeyAction.Cascade)
+    def keyword = foreignKey("uk_keyword_fk", keywordId, TableQuery[KeywordsTable])(_.id,
+      onDelete=ForeignKeyAction.Cascade)
+
+    def * = (id.?, userId, keywordId, value) <> (UserKeyword.tupled, UserKeyword.unapply)
+  }
+
+
 }
