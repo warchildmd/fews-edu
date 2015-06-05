@@ -41,20 +41,29 @@ class Articles @Inject()(protected val articlesRepo: models.Articles,
       val keyword = Await.result(keywordsRepo.findById(articleKeyword.keywordId), Duration.Inf)
       toJson(articleKeyword).as[JsObject] + ("keyword" -> toJson(keyword))
     })
-    val jsonArticle = toJson(Await.result(article, Duration.Inf)).as[JsObject] +
+    var jsonArticle = toJson(Await.result(article, Duration.Inf)).as[JsObject] +
       ("value" -> toJson(articlesRepo.getPopularityIndex(Some(id)))) +
       ("keywords" -> toJson(jsonKeywords))
 
     val user = auth.getUser(s.headers.get("Auth-Token").getOrElse(""))
     if (user.nonEmpty) {
       articlesRepo.adjust(user.get.id, Some(id))
+
+      jsonArticle += ("recommendation" -> toJson(articlesRepo.getScore(user.get.id, Some(id))))
     }
 
     Ok(toJson(jsonArticle))
   }
 
   def index = Action { implicit s =>
-    Ok(toJson(articlesRepo.list()))
+    val articles = articlesRepo.list()
+    val jsonArticles = articles.data.map((article: Article) => {
+      toJson(article).as[JsObject] + ("value" -> toJson(articlesRepo.getPopularityIndex(article.id)))
+    })
+    val jsonResponse = Json.obj(
+      "data" -> jsonArticles
+    )
+    Ok(toJson(jsonResponse))
   }
 
   def popular = Action { implicit s =>
@@ -94,7 +103,7 @@ class Articles @Inject()(protected val articlesRepo: models.Articles,
       val articles = articlesRepo.recommend(user.get.id)
       val jsonArticles = articles.data.map((article: Article) => {
         toJson(article).as[JsObject] + ("value" -> toJson(articlesRepo.getPopularityIndex(article.id))) +
-          ("distance" -> toJson(articlesRepo.getScore(user.get.id, article.id)))
+          ("recommendation" -> toJson(articlesRepo.getScore(user.get.id, article.id)))
       })
       val jsonResponse = Json.obj(
         "data" -> jsonArticles

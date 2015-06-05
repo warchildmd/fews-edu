@@ -18,23 +18,37 @@
     <body ng-app="fews" layout="column" ng-controller="CoreController as core">
 
         <md-toolbar layout="row">
-            <md-button class="menu" hide-gt-sm ng-click="core.toggleSidenav()"
+            <md-button class="menu" hide-gt-md ng-click="core.toggleSidenav()"
                 aria-label="Show User List">
                 <ng-md-icon icon="menu" style="fill: white" size="36"></ng-md-icon>
             </md-button>
-            <h1>Bossable Material Starter App</h1>
+            <h1>fews</h1>
         </md-toolbar>
 
         <div flex layout="row">
-            <md-sidenav md-is-locked-open="$mdMedia('gt-sm')" md-component-id="left"
+            <md-sidenav md-is-locked-open="$mdMedia('gt-md')" md-component-id="left"
                 class="md-whiteframe-z2">
-                <md-list-item ng-repeat="category in core.categories.data">
-                    <p> {{ category.name }} </p>
-                    <md-checkbox class="md-secondary" ng-model="category.wanted"></md-checkbox>
-                </md-list-item>
+                <md-content layout="row" layout-align="center center">
+                    <ng-md-icon icon="face" style="fill: rgba(0,0,0,.54)" size="36" ng-show="!core.user"></ng-md-icon>
+                    <ng-md-icon icon="face" style="fill: rgba(0,100,0,.74)" size="36" ng-show="core.user"></ng-md-icon>
+                    <a class="md-button">{{ core.user.username || 'ANONIM' }}</a>
+                </md-content>
+                <md-content layout="row" layout-align="center center" ng-hide="core.user">
+                    <md-button ng-click="core.showLoginDialog($event)">Autentificare</md-button>
+                    <md-button ng-click="core.showRegisterDialog($event)">Inregistrare</md-button>
+                </md-content>
+                <md-content layout="row" layout-align="center center" ng-hide="!core.user">
+                    <md-button ng-click="core.showLoginDialog($event)">Iesire</md-button>
+                </md-content>
+                <md-divider></md-divider>
+                <md-content>
+                    <md-list-item>
+                        <p><a ui-sref="list" class="md-button">pagina principala</a></p>
+                    </md-list-item>
+                </md-content>
             </md-sidenav>
 
-            <md-content flex ui-view id="content">
+            <md-content flex ui-view>
             </md-content>
         </div>
 

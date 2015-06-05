@@ -1,0 +1,21 @@
+<md-dialog aria-label="Autentificare" flex="40">
+    <md-dialog-content class="sticky-container">
+        <md-subheader class="md-sticky-no-effect">Autentificare</md-subheader>
+            <div>
+                <md-input-container>
+                    <label>Utilizator</label>
+                    <!--<ng-md-icon icon="perm_identity" style="fill: green" size="24"></ng-md-icon>-->
+                    <input ng-model="vm.credentials.username" type="text">
+                </md-input-container>
+                <md-input-container>
+                    <label>Parola</label>
+                    <!--<ng-md-icon icon="lock" style="fill: red" size="24"></ng-md-icon>-->
+                    <input ng-model="vm.credentials.password" type="password">
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <div class="md-actions" layout="row" layout-align="end center">
+            <md-button class="md-accent" ng-click="vm.cancel()">Inchide</md-button>
+            <md-button class="md-primary" ng-click="vm.login()">Autentificare</md-button>
+        </div>
+</md-dialog>

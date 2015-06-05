@@ -31,29 +31,29 @@
             return $http
                 .post('/api/auth/signin', credentials)
                 .then(function (res) {
-                    $cookieStore.put('token', res.token);
-                    $cookieStore.put('user', res.user);
+                    $cookieStore.put('session', res.data.token);
+                    $cookieStore.put('user', res.data.user);
                     return res.data.user;
                 });
         }
 
         function logout() {
             $cookieStore.remove('user');
-            $cookieStore.remove('token');
+            $cookieStore.remove('session');
         }
 
         function register(credentials) {
             return $http
                 .post('/api/auth/signup', credentials)
                 .then(function (res) {
-                    $cookieStore.put('token', res.token);
-                    $cookieStore.put('user', res.user);
+                    $cookieStore.put('session', res.data.token);
+                    $cookieStore.put('user', res.data.user);
                     return res.data.user;
                 });
         }
 
         function isAuthenticated() {
-            return !!(($cookieStore.get('user') !== undefined) && ($cookieStore.get('token') !== undefined));
+            return !!(($cookieStore.get('user') !== undefined) && ($cookieStore.get('session') !== undefined));
         }
     }
 })();

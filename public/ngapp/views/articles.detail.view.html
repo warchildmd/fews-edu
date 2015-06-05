@@ -1,0 +1,42 @@
+<section>
+    <md-content layout="row">
+        <md-card flex>
+            <img ng-src="{{ vm.article.image }}" ng-show="vm.article.image != ''"
+                 class="md-card-image" alt="Article image" style="width: 100%; height: 100%">
+            <md-card-content>
+                <h2 class="md-title">{{ vm.article.title }}</h2>
+                <p data-ng-bind-html="vm.article.content">
+                </p>
+            </md-card-content>
+        </md-card>
+        <md-content flex="25">
+            <md-card>
+                <md-card-content>
+                    <p class="md-button">
+                        popularitate: {{ vm.article.value * 10 | number: 2 }}
+                    </p>
+                    <md-divider ng-show="core.user"></md-divider>
+                    <p class="md-button" ng-show="core.user">
+                        recomandare: {{ vm.article.recommendation * 10 | number: 2 }}
+                    </p>
+                </md-card-content>
+            </md-card>
+
+            <md-card>
+                <md-card-content>
+                    <md-subheader class="md-no-sticky">Cuvinte cheie</md-subheader>
+                    <md-chips ng-model="vm.keywords" readonly="true"></md-chips>
+                </md-card-content>
+            </md-card>
+
+            <md-card>
+                <md-subheader class="md-no-sticky">Articole similare</md-subheader>
+                <md-list-item ng-repeat="article in vm.similars.data">
+                    <a class="md-button" ui-sref="detail({articleId: article.id})"> {{ article.title }} </a>
+                    <md-divider></md-divider>
+                </md-list-item>
+                </md-list>
+            </md-card>
+        </md-content>
+    </md-content>
+</section>

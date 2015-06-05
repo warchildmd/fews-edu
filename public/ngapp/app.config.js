@@ -37,7 +37,7 @@
                 },
                 request: function (config) {
                     if ($cookieStore.get('session') !== undefined) {
-                        config.headers['Auth-Token'] = $cookieStore.get('session').token;
+                        config.headers['Auth-Token'] = $cookieStore.get('session');
                     }
                     return config;
                 }
