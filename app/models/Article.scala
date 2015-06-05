@@ -192,9 +192,9 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
       val uk = Await.result(db.run(ukQuery.filter(_.userId === userId).filter(_.keywordId === ak.keywordId).result.headOption),
         Duration.Inf)
       if (uk.isEmpty) {
-        distance += math.abs(0.5 - ak.value)
+        distance += math.abs(ak.value - 0.5)
       } else {
-        distance += math.abs(uk.get.value - ak.value)
+        distance += math.abs(ak.value - uk.get.value)
       }
     }
     10.0 - distance
@@ -231,6 +231,49 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
     }
 
     val sorted = globalQuerySum.sortBy(_._2.asc).take(50)
+
+    val sortedArticles = for {
+      (sv, article) <- sorted join articles on (_._1 === _.id)
+    } yield article
+
+    val list = Await.result(db.run(sortedArticles.result), Duration.Inf)
+
+    Page(list, 1, 0, list.length, list.length)
+  }
+
+  def betaRecommend(userId: Option[Int]): Page[Article] = {
+    val articleKeywords = TableQuery[ArticleKeywordsTable]
+    val userKeywords = TableQuery[UserKeywordsTable]
+    val dbAbs = SimpleFunction.unary[Double, Double]("abs")
+    val oneDayAgo = new DateTime().minusDays(1)
+
+    val freshArticles = articles.filter(_.publicationDate >= oneDayAgo)
+    val myKeywords = userKeywords.filter(_.userId === userId)
+
+    val freshArticlesKeywords = for {
+      (article, keyword) <- freshArticles join articleKeywords on (_.id === _.articleId)
+    } yield (article.id, keyword.keywordId, keyword.value)
+
+    val interestingKeywords = freshArticlesKeywords.groupBy(_._2).map {
+        case (keywordId, group) => keywordId
+    }
+
+    val myKeywordValues = for {
+      (keyword, uk) <- interestingKeywords joinLeft myKeywords on (_ === _.keywordId)
+    } yield (keyword, uk.map(_.value))
+
+    val normalize = (
+      for {
+        (articles, keywords) <- freshArticlesKeywords join myKeywordValues on (_._2 === _._1)
+    } yield (articles._1, dbAbs(articles._3 - keywords._2.getOrElse(0.5)))).groupBy(_._1)
+
+    val globalQuerySum = normalize.map { case (articleId, line) =>
+      (articleId, line.map(_._2).sum)
+    }
+
+    val sorted = globalQuerySum.sortBy(_._2.asc).take(50)
+
+    Await.result(db.run(sorted.result), Duration.Inf).foreach(x => println((10 - x._2.get) * 10))
 
     val sortedArticles = for {
       (sv, article) <- sorted join articles on (_._1 === _.id)

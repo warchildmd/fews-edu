@@ -100,7 +100,7 @@ class Articles @Inject()(protected val articlesRepo: models.Articles,
       )
       Ok(toJson(jsonResponse))
     } else {
-      val articles = articlesRepo.recommend(user.get.id)
+      val articles = articlesRepo.betaRecommend(user.get.id)
       val jsonArticles = articles.data.map((article: Article) => {
         toJson(article).as[JsObject] + ("value" -> toJson(articlesRepo.getPopularityIndex(article.id))) +
           ("recommendation" -> toJson(articlesRepo.getScore(user.get.id, article.id)))
