@@ -1,7 +1,6 @@
-'use strict';
+(function () {
+    'use strict';
 
-angular
-    .module('fews', ['ngResource', 'ngAnimate', 'ui.router', 'ngCookies'])
-    .config(function ($locationProvider) {
-        $locationProvider.hashPrefix('!');
-    });
+    angular
+        .module('fews', ['ngMaterial', 'ngAnimate', 'ui.router', 'ngCookies', 'ngMdIcons']);
+})();

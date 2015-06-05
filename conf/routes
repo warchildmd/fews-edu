@@ -4,6 +4,7 @@
 
 # Home page
 GET         /                                controllers.Application.index
+GET         /material/                       controllers.Application.material
 GET         /run                             controllers.Application.run
 POST        /api/auth/signin                 controllers.Auth.login
 POST        /api/auth/signout                controllers.Auth.logout

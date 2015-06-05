@@ -15,6 +15,10 @@ class Application @Inject()(protected val articlesRepo: models.Articles,
     Ok(views.html.index())
   }
 
+  def material = Action {
+    Ok(views.html.material())
+  }
+
   def run = Action {
     val reader = new Reader(crawlSessionsRepo, feedsRepo, keywordsRepo, akRepo, articlesRepo)
     reader.crawl()
