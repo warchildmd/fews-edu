@@ -132,8 +132,6 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
       keyword <- myKeywords
     } yield (article.id, keyword.keywordId)
 
-    val emptyAK = new ArticleKeyword(None, 0, 0, 0)
-
     val valuesJoin = for {
       (ij, ak) <- inJoin joinLeft articleKeywords on ((ij, ak) => {
         ij._1 === ak.articleId && ij._2 === ak.keywordId
@@ -163,7 +161,7 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
   def adjust(userId: Option[Int], articleId: Option[Int]) {
     val akQuery = TableQuery[ArticleKeywordsTable]
     val ukQuery = TableQuery[UserKeywordsTable]
-    val alpha = 0.05
+    val alpha = 0.01
 
     val akList = Await.result(db.run(akQuery.filter(_.articleId === articleId).result), Duration.Inf)
 
@@ -241,7 +239,7 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
     Page(list, 1, 0, list.length, list.length)
   }
 
-  def betaRecommend(userId: Option[Int]): Page[Article] = {
+  def betaRecommend(userId: Option[Int]): Page[(Article, Option[Double])] = {
     val articleKeywords = TableQuery[ArticleKeywordsTable]
     val userKeywords = TableQuery[UserKeywordsTable]
     val dbAbs = SimpleFunction.unary[Double, Double]("abs")
@@ -271,13 +269,11 @@ class Articles @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
       (articleId, line.map(_._2).sum)
     }
 
-    val sorted = globalQuerySum.sortBy(_._2.asc).take(50)
-
-    Await.result(db.run(sorted.result), Duration.Inf).foreach(x => println((10 - x._2.get) * 10))
+    val sorted = globalQuerySum.sortBy(_._2.asc).take(20)
 
     val sortedArticles = for {
       (sv, article) <- sorted join articles on (_._1 === _.id)
-    } yield article
+    } yield (article, sv._2)
 
     val list = Await.result(db.run(sortedArticles.result), Duration.Inf)
 
